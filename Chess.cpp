@@ -11,6 +11,13 @@ void print_board(char board[8][8])
         }
         cout<<"\n";
     }
+    cout<<"\n";
+}
+
+void move_piece(char board[8][8], int fromRow, int fromCol, int toRow, int toCol)
+{
+    board[toRow][toCol] = board[fromRow][fromCol];
+    board[fromRow][fromCol] = '.';
 }
 
 int main()
