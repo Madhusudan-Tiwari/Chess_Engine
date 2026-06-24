@@ -5,9 +5,8 @@ Learning project written in C++.
 Current progress:
 - Board representation
 - print_board()
-
+- move_piece()
 Planned:
-- Piece movement
 - Legal move generation
 - Evaluation function
 - Minimax

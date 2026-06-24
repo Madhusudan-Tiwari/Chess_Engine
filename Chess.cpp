@@ -1,6 +1,20 @@
 #include<iostream>
 using namespace std;
 
+pair<string, string> take_input()
+{
+    string from, to;
+    cin>>from>>to;
+    return {from, to};
+}
+
+pair<int , int> string_to_index(string pos)
+{
+    int col = pos[0] - 'a';
+    int row = 8 - (pos[1] - '0');
+    return{row, col};
+}
+
 void print_board(char board[8][8])
 {
     for(int i = 0; i < 8; i++)
@@ -33,5 +47,13 @@ int main()
         {'P','P','P','P','P','P','P','P'},
         {'R','N','B','Q','K','B','N','R'}};
 
-    print_board(board);
+    while(1)
+    {
+        pair<string, string> move =  take_input();
+        pair<int, int> from = string_to_index(move.first);
+        pair<int, int> to = string_to_index(move.second);
+        move_piece(board, from.first, from.second, to.first, to.second);
+        print_board(board);
+    }
+
 }
