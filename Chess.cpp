@@ -1,11 +1,21 @@
 #include<iostream>
 using namespace std;
 
+bool valid_square(string pos)
+{
+    if(pos.length() != 2 || pos[0] < 'a' || pos[0] > 'h' || pos[1] < '1' || pos[1] > '8') return false;
+    return true;
+}
+
 pair<string, string> take_input()
 {
     string from, to;
-    cin>>from>>to;
-    return {from, to};
+    while(true)
+    {
+        cin>>from>>to;
+        if(valid_square(from) && valid_square(to)) return {from, to};
+        cout<< "Invalid Input \n";
+    }
 }
 
 pair<int , int> string_to_index(string pos)
@@ -46,6 +56,7 @@ int main()
         {'.','.','.','.','.','.','.','.'},
         {'P','P','P','P','P','P','P','P'},
         {'R','N','B','Q','K','B','N','R'}};
+    print_board(board);
 
     while(1)
     {
