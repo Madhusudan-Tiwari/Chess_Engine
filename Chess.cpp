@@ -55,6 +55,20 @@ bool is_legal_move(char board[8][8], Position from, Position to)
             }
             break;
 
+        case 'p':
+            if(to.col != from.col)return false;
+            if(board[to.row][to.col] != '.')return false;
+            if(from.row == 1)
+            {
+                if(to.row != 2 && to.row != 3) return false;
+                if(to.row == 3 && board[2][to.col] != '.')return false;
+            }
+            else 
+            {
+                if(to.row - from.row != 1) return false;
+            }
+            break;  
+
         default:
             return false;
     }
