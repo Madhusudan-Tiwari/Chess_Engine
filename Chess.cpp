@@ -32,6 +32,13 @@ Position string_to_index(string pos)
     return{row, col};
 }
 
+bool is_legal_move(char board[8][8], Position from, Position to)
+{
+    if(from.row == to.row && from.col == to.col) return false;
+    if(board[from.row][from.col] == '.')return false;
+    return true;
+}
+
 void print_board(char board[8][8])
 {
     for(int i = 0; i < 8; i++)
@@ -70,7 +77,11 @@ int main()
         pair<string, string> move =  take_input();
         Position from = string_to_index(move.first);
         Position to = string_to_index(move.second);
-        move_piece(board, from.row, from.col, to.row, to.col);
+        if(is_legal_move(board, from, to))
+        {
+            move_piece(board, from.row, from.col, to.row, to.col);
+        }
+        else cout<<"Illegal Move";
         print_board(board);
     }
 
