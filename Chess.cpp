@@ -32,6 +32,25 @@ Position string_to_index(string pos)
     return{row, col};
 }
 
+bool is_path_clear(char board[8][8], Position from, Position to)
+{
+    int dr = 0;
+    int dc = 0;
+    if(to.col < from.col) dc = -1;
+    else if(to.col > from.col) dc = 1;
+    if(to.row < from.row) dr = -1;
+    else if(to.row > from.row) dr = 1;
+    int curr_row = from.row + dr;
+    int curr_col = from.col + dc;
+    while(curr_row != to.row || curr_col != to.col)
+    {
+        if(board[curr_row][curr_col] != '.')return false;
+        if(dr != 0) curr_row += dr;
+        if(dc != 0) curr_col += dc;
+    }
+    return true;
+}
+
 bool is_legal_move(char board[8][8], Position from, Position to, bool is_white_turn)
 {
     if(from.row == to.row && from.col == to.col) return false;
@@ -40,13 +59,15 @@ bool is_legal_move(char board[8][8], Position from, Position to, bool is_white_t
     if(is_white_turn && piece > 'Z') return false;
     if(!is_white_turn && piece < 'a') return false;
     
+    int row_diff = abs(to.row - from.row);
+    int col_diff = abs(to.col-from.col);
 
     char target = board[to.row][to.col];
     
     switch(piece)
     {
         case 'P':
-            if(to.col != from.col)return false;
+            if(col_diff != 0)return false;
             if(target != '.')return false;
             if(from.row == 6)
             {
@@ -60,7 +81,7 @@ bool is_legal_move(char board[8][8], Position from, Position to, bool is_white_t
             break;
 
         case 'p':
-            if(to.col != from.col)return false;
+            if(col_diff != 0)return false;
             if(target != '.')return false;
             if(from.row == 1)
             {
@@ -76,10 +97,32 @@ bool is_legal_move(char board[8][8], Position from, Position to, bool is_white_t
         case 'N':
         case 'n':
             if(target != '.') return false;
-            int row_diff = abs(to.row-from.row);
-            int col_diff = abs(to.col-from.col);
             if((row_diff != 1 && row_diff != 2) || (col_diff != 1 && col_diff!=2) || row_diff + col_diff != 3)return false;
             break;
+
+        case 'k':
+        case 'K':
+            if(target != '.') return false;
+            if(row_diff > 1 || col_diff > 1) return false;
+            break;
+
+        case 'r':
+        case 'R':
+            if(target != '.') return false;
+            if(row_diff != 0 && col_diff != 0) return false;
+            return is_path_clear(board, from, to);
+
+        case 'b':
+        case 'B':
+            if(target != '.') return false;
+            if(row_diff != col_diff) return false;
+            return is_path_clear(board, from, to);
+
+        case 'q':
+        case 'Q':
+            if(target != '.') return false;
+            if(row_diff != col_diff && row_diff != 0 && col_diff != 0) return false;
+            return is_path_clear(board, from, to);
 
         default:
             return false;
