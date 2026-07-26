@@ -56,71 +56,83 @@ bool is_legal_move(char board[8][8], Position from, Position to, bool is_white_t
     if(from.row == to.row && from.col == to.col) return false;
     char piece = board[from.row][from.col];
     if(piece == '.')return false;
-    if(is_white_turn && piece > 'Z') return false;
-    if(!is_white_turn && piece < 'a') return false;
-    
+
     int row_diff = abs(to.row - from.row);
     int col_diff = abs(to.col-from.col);
-
     char target = board[to.row][to.col];
+
+    if(is_white_turn && (piece > 'Z' || (target < 'Z' && target > 'A'))) return false;
+    if(!is_white_turn && (piece < 'a' || ( target <'z' && target > 'a'))) return false;
+    
     
     switch(piece)
     {
         case 'P':
-            if(col_diff != 0)return false;
-            if(target != '.')return false;
-            if(from.row == 6)
+            if(col_diff == 0)
             {
-                if(to.row != 4 && to.row != 5) return false;
-                if(to.row == 4 && board[5][to.col] != '.')return false;
+                if(target != '.')return false;
+                if(from.row == 6)
+                {
+                    if(to.row != 4 && to.row != 5) return false;
+                    if(to.row == 4 && board[5][to.col] != '.')return false;
+                }
+                else 
+                {
+                    if(to.row - from.row != -1) return false;
+                }
             }
-            else 
+            else if(col_diff == 1)
             {
-                if(to.row - from.row != -1) return false;
+                if(target == '.')return false;
+                if(to.row - from.row != -1)return false;
             }
+            else return false;
             break;
 
         case 'p':
-            if(col_diff != 0)return false;
-            if(target != '.')return false;
-            if(from.row == 1)
+            if(col_diff == 0)
             {
-                if(to.row != 2 && to.row != 3) return false;
-                if(to.row == 3 && board[2][to.col] != '.')return false;
+                if(target != '.')return false;
+                if(from.row == 1)
+                {
+                    if(to.row != 2 && to.row != 3) return false;
+                    if(to.row == 3 && board[2][to.col] != '.')return false;
+                }
+                else 
+                {
+                    if(to.row - from.row != 1) return false;
+                }
             }
-            else 
+            else if(col_diff == 1)
             {
-                if(to.row - from.row != 1) return false;
+                if(target == '.')return false;
+                if(to.row - from.row != 1)return false;
             }
+            else return false;
             break;  
 
         case 'N':
         case 'n':
-            if(target != '.') return false;
             if((row_diff != 1 && row_diff != 2) || (col_diff != 1 && col_diff!=2) || row_diff + col_diff != 3)return false;
             break;
 
         case 'k':
         case 'K':
-            if(target != '.') return false;
             if(row_diff > 1 || col_diff > 1) return false;
             break;
 
         case 'r':
         case 'R':
-            if(target != '.') return false;
             if(row_diff != 0 && col_diff != 0) return false;
             return is_path_clear(board, from, to);
 
         case 'b':
         case 'B':
-            if(target != '.') return false;
             if(row_diff != col_diff) return false;
             return is_path_clear(board, from, to);
 
         case 'q':
         case 'Q':
-            if(target != '.') return false;
             if(row_diff != col_diff && row_diff != 0 && col_diff != 0) return false;
             return is_path_clear(board, from, to);
 
