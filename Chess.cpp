@@ -32,12 +32,16 @@ Position string_to_index(string pos)
     return{row, col};
 }
 
-bool is_legal_move(char board[8][8], Position from, Position to)
+bool is_legal_move(char board[8][8], Position from, Position to, bool is_white_turn)
 {
     if(from.row == to.row && from.col == to.col) return false;
-    if(board[from.row][from.col] == '.')return false;
-
     char piece = board[from.row][from.col];
+    if(piece == '.')return false;
+    if(is_white_turn && piece > 'Z') return false;
+    if(!is_white_turn && piece < 'a') return false;
+    
+
+    
     
     switch(piece)
     {
@@ -111,14 +115,16 @@ int main()
         {'R','N','B','Q','K','B','N','R'}};
     print_board(board);
 
+    bool is_white_turn = true;
     while(1)
     {
         pair<string, string> move =  take_input();
         Position from = string_to_index(move.first);
         Position to = string_to_index(move.second);
-        if(is_legal_move(board, from, to))
+        if(is_legal_move(board, from, to, is_white_turn))
         {
             move_piece(board, from.row, from.col, to.row, to.col);
+            is_white_turn = !is_white_turn;
         }
         else cout<<"Illegal Move \n";
         print_board(board);
