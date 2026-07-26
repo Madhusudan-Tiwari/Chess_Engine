@@ -36,6 +36,31 @@ bool is_legal_move(char board[8][8], Position from, Position to)
 {
     if(from.row == to.row && from.col == to.col) return false;
     if(board[from.row][from.col] == '.')return false;
+
+    char piece = board[from.row][from.col];
+    
+    switch(piece)
+    {
+        case 'P':
+            if(to.col != from.col)return false;
+            if(board[to.row][to.col] != '.')return false;
+            if(from.row == 6)
+            {
+                if(to.row != 4 && to.row != 5) return false;
+                if(to.row == 4 && board[5][to.col] != '.')return false;
+            }
+            else 
+            {
+                if(to.row - from.row != -1) return false;
+            }
+            break;
+
+        default:
+            return false;
+    }
+
+
+
     return true;
 }
 
@@ -81,7 +106,7 @@ int main()
         {
             move_piece(board, from.row, from.col, to.row, to.col);
         }
-        else cout<<"Illegal Move";
+        else cout<<"Illegal Move \n";
         print_board(board);
     }
 
