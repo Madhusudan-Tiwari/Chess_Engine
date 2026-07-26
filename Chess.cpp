@@ -1,6 +1,13 @@
 #include<iostream>
 using namespace std;
 
+
+struct Position
+{
+    int row;
+    int col;
+};
+
 bool valid_square(string pos)
 {
     if(pos.length() != 2 || pos[0] < 'a' || pos[0] > 'h' || pos[1] < '1' || pos[1] > '8') return false;
@@ -18,7 +25,7 @@ pair<string, string> take_input()
     }
 }
 
-pair<int , int> string_to_index(string pos)
+Position string_to_index(string pos)
 {
     int col = pos[0] - 'a';
     int row = 8 - (pos[1] - '0');
@@ -61,9 +68,9 @@ int main()
     while(1)
     {
         pair<string, string> move =  take_input();
-        pair<int, int> from = string_to_index(move.first);
-        pair<int, int> to = string_to_index(move.second);
-        move_piece(board, from.first, from.second, to.first, to.second);
+        Position from = string_to_index(move.first);
+        Position to = string_to_index(move.second);
+        move_piece(board, from.row, from.col, to.row, to.col);
         print_board(board);
     }
 
