@@ -32,6 +32,12 @@ Position string_to_index(string pos)
     return{row, col};
 }
 
+void move_piece(char board[8][8], Position from, Position to)
+{
+    board[to.row][to.col] = board[from.row][from.col];
+    board[from.row][from.col] = '.';
+}
+
 bool is_path_clear(char board[8][8], Position from, Position to)
 {
     int dr = 0;
@@ -49,6 +55,130 @@ bool is_path_clear(char board[8][8], Position from, Position to)
         if(dc != 0) curr_col += dc;
     }
     return true;
+}
+
+bool inside(int row, int col)
+{
+    return row >= 0 && row < 8 &&
+           col >= 0 && col < 8;
+}
+
+bool is_square_attacked(char board[8][8], Position current, bool is_white)
+{
+    int knight_row[] = {-2,-2,-1,-1,1,1,2,2};
+    int knight_col[] = {-1,1,-2,2,-2,2,-1,1};
+    for(int k = 0; k < 8; k++)
+    {
+        int row = current.row + knight_row[k];
+        int col = current.col + knight_col[k];
+        if(inside(row, col))
+        {
+            if(is_white && board[row][col] == 'n')return true;
+            if(!is_white && board[row][col] == 'N')return true;
+        }
+    }
+
+    int king_row[] = {-1,-1,-1,0,0,1,1,1};
+    int king_col[] = {-1,0,1,-1,1,-1,0,1};
+    for(int k = 0; k < 8; k++)
+    {
+        int row = current.row + king_row[k];
+        int col = current.col + king_col[k];
+        if(inside(row, col))
+        {
+            if(is_white && board[row][col] == 'k')return true;
+            if(!is_white && board[row][col] == 'K')return true;
+        }
+    }
+
+
+    if(is_white)
+    {
+        if(inside(current.row - 1, current.col - 1) && board[current.row - 1][current.col - 1] == 'p') return true;
+        if(inside(current.row - 1, current.col + 1) && board[current.row - 1][current.col + 1] == 'p') return true;
+    }
+    else
+    {
+        if(inside(current.row + 1, current.col - 1) && board[current.row + 1][current.col - 1] == 'P') return true;
+        if(inside(current.row + 1, current.col + 1) && board[current.row + 1][current.col + 1] == 'P') return true;
+    }
+
+    int dr[] = {-1, 1, 0, 0};
+    int dc[] = {0, 0, -1, 1};
+    for(int i = 0; i < 4; i++)
+    {
+        int row = current.row + dr[i];
+        int col = current.col + dc[i];
+
+        while(inside(row, col))
+        {
+            if(board[row][col] == '.')
+            {
+                row += dr[i];
+                col += dc[i];
+                continue;
+            }
+
+            if(is_white)
+            {
+                if(board[row][col] == 'r' || board[row][col] == 'q')
+                    return true;
+            }
+            else
+            {
+                if(board[row][col] == 'R' || board[row][col] == 'Q')
+                    return true;
+            }
+            break;
+        }
+    }
+
+
+    int bishop_dr[] = {-1,-1,1,1};
+    int bishop_dc[] = {-1,1,-1,1};
+    for(int i = 0; i < 4; i++)
+    {
+        int row = current.row + bishop_dr[i];
+        int col = current.col + bishop_dc[i];
+
+        while(inside(row, col))
+        {
+            if(board[row][col] == '.')
+            {
+                row += bishop_dr[i];
+                col += bishop_dc[i];
+                continue;
+            }
+
+            if(is_white)
+            {
+                if(board[row][col] == 'b' || board[row][col] == 'q')
+                    return true;
+            }
+            else
+            {
+                if(board[row][col] == 'B' || board[row][col] == 'Q')
+                    return true;
+            }
+            break;
+        }
+    }
+
+    return false;
+}
+
+Position find_king(char board[8][8], bool is_white)
+{
+    for(int i = 0; i < 8; i++)
+    {
+        for(int j = 0; j < 8; j++)
+        {
+            if(is_white && board[i][j] == 'K') return {i, j};
+            else if(!is_white && board[i][j] == 'k') return{i, j};
+        }
+    }
+
+    return {-1,-1};
 }
 
 bool is_legal_move(char board[8][8], Position from, Position to, bool is_white_turn)
@@ -124,23 +254,36 @@ bool is_legal_move(char board[8][8], Position from, Position to, bool is_white_t
         case 'r':
         case 'R':
             if(row_diff != 0 && col_diff != 0) return false;
-            return is_path_clear(board, from, to);
+            if(!is_path_clear(board, from, to)) return false;
+            break;
 
         case 'b':
         case 'B':
             if(row_diff != col_diff) return false;
-            return is_path_clear(board, from, to);
+            if(!is_path_clear(board, from, to)) return false;
+            break;
 
         case 'q':
         case 'Q':
             if(row_diff != col_diff && row_diff != 0 && col_diff != 0) return false;
-            return is_path_clear(board, from, to);
+            if(!is_path_clear(board, from, to)) return false;
+            break;
 
         default:
             return false;
     }
 
+    char temp_board[8][8];
+    for(int i = 0; i < 8; i++)
+    {
+        for(int j = 0; j < 8; j++)
+        {
+            temp_board[i][j] = board[i][j];
+        }
+    }
 
+    move_piece(temp_board, from, to);
+    if(is_square_attacked(temp_board, find_king(temp_board, is_white_turn), is_white_turn)) return false;
 
     return true;
 }
@@ -158,11 +301,7 @@ void print_board(char board[8][8])
     cout<<"\n";
 }
 
-void move_piece(char board[8][8], int fromRow, int fromCol, int toRow, int toCol)
-{
-    board[toRow][toCol] = board[fromRow][fromCol];
-    board[fromRow][fromCol] = '.';
-}
+
 
 int main()
 {
@@ -186,7 +325,7 @@ int main()
         Position to = string_to_index(move.second);
         if(is_legal_move(board, from, to, is_white_turn))
         {
-            move_piece(board, from.row, from.col, to.row, to.col);
+            move_piece(board, from, to);
             is_white_turn = !is_white_turn;
         }
         else cout<<"Illegal Move \n";
