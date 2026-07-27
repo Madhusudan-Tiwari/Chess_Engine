@@ -1,6 +1,13 @@
 #include<iostream>
 using namespace std;
 
+enum GameState
+{
+    NORMAL,
+    CHECK,
+    CHECKMATE,
+    STALEMATE
+};
 
 struct Position
 {
@@ -288,6 +295,47 @@ bool is_legal_move(char board[8][8], Position from, Position to, bool is_white_t
     return true;
 }
 
+
+GameState check_game_state(char board[8][8], bool white_to_move)
+{
+    bool has_legal_move = false;
+    for(int i = 0; i < 8 && !has_legal_move; i++)
+    {
+        for(int j = 0; j < 8 && !has_legal_move; j++)
+        {
+            char piece = board[i][j];
+            if((white_to_move && isupper(piece)) || (!white_to_move && islower(piece)))
+            {
+                for(int k = 0; k < 8; k++)
+                {
+                    for(int l = 0; l < 8; l++)
+                    {
+                        if(is_legal_move(board, {i, j}, {k, l}, white_to_move))
+                        {
+                            has_legal_move = true;
+                            break;
+                        }
+                    }
+                    if(has_legal_move)break;
+                }
+            }
+        }
+    }
+
+    Position king_pos = find_king(board, white_to_move);
+    bool king_in_check = is_square_attacked(board, king_pos, white_to_move);
+
+    if (has_legal_move)
+    {
+        return king_in_check ? CHECK : NORMAL;
+    }
+    else
+    {
+        return king_in_check ? CHECKMATE : STALEMATE;
+    }
+}
+
+
 void print_board(char board[8][8])
 {
     for(int i = 0; i < 8; i++)
@@ -330,6 +378,22 @@ int main()
         }
         else cout<<"Illegal Move \n";
         print_board(board);
+        GameState state = check_game_state(board, is_white_turn);
+
+        if(state == CHECKMATE)
+        {
+            cout<<"Checkmate Game Over"<<"\n";
+            break;
+        }
+        else if(state == STALEMATE)
+        {
+            cout<<"STALEMATE It's a DRAW"<<"\n";
+            break;
+        }
+        else if(state == CHECK)
+        {
+            cout<<"CHECK"<<"\n";
+        }
     }
 
 }
