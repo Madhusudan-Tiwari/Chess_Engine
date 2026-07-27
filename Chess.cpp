@@ -1,6 +1,15 @@
 #include<iostream>
 using namespace std;
 
+bool whiteKingMoved = false;
+bool blackKingMoved = false;
+
+bool whiteHRookMoved = false;
+bool whiteARookMoved = false;
+
+bool blackHRookMoved = false;
+bool blackARookMoved = false;
+
 enum GameState
 {
     NORMAL,
@@ -41,6 +50,22 @@ Position string_to_index(string pos)
 
 void move_piece(char board[8][8], Position from, Position to)
 {
+    char piece = board[from.row][from.col];
+    if ((piece == 'K' || piece == 'k') && abs(to.col - from.col) == 2)
+    {
+        
+        if (to.col > from.col)
+        {
+            board[from.row][5] = board[from.row][7];
+            board[from.row][7] = '.';
+        }
+        else
+        {
+            board[from.row][3] = board[from.row][0];
+            board[from.row][0] = '.';
+        }
+    }
+
     board[to.row][to.col] = board[from.row][from.col];
     board[from.row][from.col] = '.';
 }
@@ -255,7 +280,33 @@ bool is_legal_move(char board[8][8], Position from, Position to, bool is_white_t
 
         case 'k':
         case 'K':
-            if(row_diff > 1 || col_diff > 1) return false;
+            if(row_diff > 1 || col_diff > 2) return false;
+            if(col_diff == 2)
+            {
+                if(row_diff != 0) return false;
+                if(is_white_turn && whiteKingMoved || !is_white_turn && blackKingMoved)return false;
+                if(to.col > from.col)
+                {
+                    if (is_white_turn && whiteHRookMoved || !is_white_turn && blackHRookMoved) return false;
+                    if (board[from.row][5] != '.' || board[from.row][6] != '.') return false;
+
+                    if (is_square_attacked(board, {from.row, 4}, is_white_turn) ||
+                        is_square_attacked(board, {from.row, 5}, is_white_turn) ||
+                        is_square_attacked(board, {from.row, 6}, is_white_turn))
+                        return false;
+                }
+                else
+                {
+                    
+                    if (is_white_turn && whiteARookMoved || !is_white_turn && blackARookMoved) return false;
+                    if (board[from.row][1] != '.' || board[from.row][2] != '.' || board[from.row][3] != '.') return false;
+
+                    if (is_square_attacked(board, {from.row, 4}, is_white_turn) ||
+                        is_square_attacked(board, {from.row, 3}, is_white_turn) ||
+                        is_square_attacked(board, {from.row, 2}, is_white_turn))
+                        return false;
+                }
+            }
             break;
 
         case 'r':
@@ -335,6 +386,27 @@ GameState check_game_state(char board[8][8], bool white_to_move)
     }
 }
 
+void update_castling_flags(Position from, Position to, char piece)
+{
+    if (piece == 'K') whiteKingMoved = true;
+    if (piece == 'k') blackKingMoved = true;
+
+    if (piece == 'R')
+    {
+        if (from.row == 7 && from.col == 0) whiteARookMoved = true;
+        if (from.row == 7 && from.col == 7) whiteHRookMoved = true;
+    }
+    if (piece == 'r')
+    {
+        if (from.row == 0 && from.col == 0) blackARookMoved = true;
+        if (from.row == 0 && from.col == 7) blackHRookMoved = true;
+    }
+
+    if (to.row == 7 && to.col == 0) whiteARookMoved = true;
+    if (to.row == 7 && to.col == 7) whiteHRookMoved = true;
+    if (to.row == 0 && to.col == 0) blackARookMoved = true;
+    if (to.row == 0 && to.col == 7) blackHRookMoved = true;
+}
 
 void print_board(char board[8][8])
 {
@@ -373,6 +445,8 @@ int main()
         Position to = string_to_index(move.second);
         if(is_legal_move(board, from, to, is_white_turn))
         {
+            char piece = board[from.row][from.col];
+            update_castling_flags(from, to, piece);            
             move_piece(board, from, to);
             is_white_turn = !is_white_turn;
         }
