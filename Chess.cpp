@@ -24,6 +24,14 @@ struct Position
     int col;
 };
 
+struct LastMove
+{
+    Position from;
+    Position to;
+    char piece;
+};
+LastMove lastmove;
+
 bool valid_square(string pos)
 {
     if(pos.length() != 2 || pos[0] < 'a' || pos[0] > 'h' || pos[1] < '1' || pos[1] > '8') return false;
@@ -48,7 +56,7 @@ Position string_to_index(string pos)
     return{row, col};
 }
 
-void move_piece(char board[8][8], Position from, Position to)
+void move_piece(char board[8][8], Position from, Position to, char promotion_piece = '\0')
 {
     char piece = board[from.row][from.col];
     if ((piece == 'K' || piece == 'k') && abs(to.col - from.col) == 2)
@@ -66,8 +74,60 @@ void move_piece(char board[8][8], Position from, Position to)
         }
     }
 
+    if ((piece == 'P' || piece == 'p') && abs(to.col - from.col) == 1 && board[to.row][to.col] == '.')
+    {
+        int captured_row = (piece == 'P') ? to.row + 1 : to.row - 1;
+        board[captured_row][to.col] = '.';
+    }
+
     board[to.row][to.col] = board[from.row][from.col];
     board[from.row][from.col] = '.';
+
+    if (piece == 'P' && to.row == 0)
+    {
+        if (promotion_piece != '\0') board[to.row][to.col] = toupper(promotion_piece);
+        else
+        {
+            while (1)
+            {
+                cout << "Please enter the piece you want to promote it to (Q, B, N, R): ";
+                char a;
+                cin >> a;
+                a = toupper(a);
+                if (a == 'Q' || a == 'N' || a == 'R' || a == 'B')
+                {
+                    board[to.row][to.col] = a;
+                    break;
+                }
+                else cout << "Please enter a valid choice\n";
+            }
+        }
+    }
+    else if (piece == 'p' && to.row == 7)
+    {
+        if (promotion_piece != '\0')
+        {
+            board[to.row][to.col] = tolower(promotion_piece);
+        }
+        else
+        {
+            while (1)
+            {
+                cout << "Please enter the piece you want to promote it to (q, b, n, r): ";
+                char a;
+                cin >> a;
+                a = tolower(a);
+                if (a == 'q' || a == 'n' || a == 'r' || a == 'b')
+                {
+                    board[to.row][to.col] = a;
+                    break;
+                }
+                else cout << "Please enter a valid choice\n";
+            }
+        }
+    }
+
+    
 }
 
 bool is_path_clear(char board[8][8], Position from, Position to)
@@ -245,7 +305,7 @@ bool is_legal_move(char board[8][8], Position from, Position to, bool is_white_t
             }
             else if(col_diff == 1)
             {
-                if(target == '.')return false;
+                if(target == '.') if(lastmove.from.row != 1 || lastmove.to.row != 3 || lastmove.to.col != to.col || from.row != 3 || lastmove.piece != 'p') return false;
                 if(to.row - from.row != -1)return false;
             }
             else return false;
@@ -267,7 +327,7 @@ bool is_legal_move(char board[8][8], Position from, Position to, bool is_white_t
             }
             else if(col_diff == 1)
             {
-                if(target == '.')return false;
+                if(target == '.') if(lastmove.from.row != 6 || lastmove.to.row != 4 || lastmove.to.col != to.col || from.row != 4 || lastmove.piece != 'P') return false;
                 if(to.row - from.row != 1)return false;
             }
             else return false;
@@ -340,7 +400,7 @@ bool is_legal_move(char board[8][8], Position from, Position to, bool is_white_t
         }
     }
 
-    move_piece(temp_board, from, to);
+    move_piece(temp_board, from, to, 'q');
     if(is_square_attacked(temp_board, find_king(temp_board, is_white_turn), is_white_turn)) return false;
 
     return true;
@@ -449,6 +509,9 @@ int main()
             update_castling_flags(from, to, piece);            
             move_piece(board, from, to);
             is_white_turn = !is_white_turn;
+            lastmove.from = from;
+            lastmove.piece = piece;
+            lastmove.to = to;
         }
         else cout<<"Illegal Move \n";
         print_board(board);
