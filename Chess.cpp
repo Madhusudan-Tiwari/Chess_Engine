@@ -1,4 +1,5 @@
 #include<iostream>
+#include<vector>
 using namespace std;
 
 bool whiteKingMoved = false;
@@ -24,13 +25,13 @@ struct Position
     int col;
 };
 
-struct LastMove
+struct Move
 {
-    Position from;
-    Position to;
-    char piece;
+    Position from = {-1, -1};
+    Position to = {-1, -1};
+    char piece = ' ';
 };
-LastMove lastmove;
+Move lastmove;
 
 bool valid_square(string pos)
 {
@@ -283,8 +284,16 @@ bool is_legal_move(char board[8][8], Position from, Position to, bool is_white_t
     int col_diff = abs(to.col-from.col);
     char target = board[to.row][to.col];
 
-    if(is_white_turn && (piece > 'Z' || (target < 'Z' && target > 'A'))) return false;
-    if(!is_white_turn && (piece < 'a' || ( target <'z' && target > 'a'))) return false;
+    if (is_white_turn)
+    {
+        if (!isupper(piece)) return false;
+        if (isupper(target)) return false;
+    }
+    else
+    {
+        if (!islower(piece)) return false;
+        if (islower(target)) return false;
+    }
     
     
     switch(piece)
@@ -335,7 +344,7 @@ bool is_legal_move(char board[8][8], Position from, Position to, bool is_white_t
 
         case 'N':
         case 'n':
-            if((row_diff != 1 && row_diff != 2) || (col_diff != 1 && col_diff!=2) || row_diff + col_diff != 3)return false;
+            if (!((row_diff == 1 && col_diff == 2) || (row_diff == 2 && col_diff == 1)))return false;
             break;
 
         case 'k':
@@ -481,24 +490,137 @@ void print_board(char board[8][8])
     cout<<"\n";
 }
 
+vector<Move> generate_legal_moves(char board[8][8], bool white_to_move)
+{
+    vector<Move> result;
+    for(int i = 0; i < 8; i++)
+    {
+        for(int j = 0; j < 8; j++)
+        {
+            char piece = board[i][j];
+            if(white_to_move && isupper(piece) || !white_to_move && islower(piece))
+            {
+                for(int k = 0; k < 8; k++)
+                {
+                    for(int l = 0; l < 8; l++)
+                    {
+                        if(is_legal_move(board, {i, j}, {k, l}, white_to_move))
+                        {
+                            result.push_back({{i, j}, {k, l}, piece});
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return result;
+}
 
+int perft(char board[8][8], int depth, bool white_to_move)
+{
+    vector<Move> moves = generate_legal_moves(board, white_to_move);
+    if(depth == 1) return moves.size();
+
+    int count = 0;
+
+    for(const auto &m : moves)
+    {
+        char temp_board[8][8];
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                temp_board[i][j] = board[i][j];
+            }
+        }
+
+        Move prev_lastmove = lastmove;
+        bool wKM = whiteKingMoved, bKM = blackKingMoved;
+        bool wHRM = whiteHRookMoved, wARM = whiteARookMoved;
+        bool bHRM = blackHRookMoved, bARM = blackARookMoved;
+        lastmove = m;
+
+        update_castling_flags(m.from, m.to, m.piece);
+        
+        move_piece(temp_board, m.from, m.to, 'q');
+        count += perft(temp_board, depth - 1, !white_to_move);
+
+        lastmove = prev_lastmove;
+        whiteKingMoved = wKM; blackKingMoved = bKM;
+        whiteHRookMoved = wHRM; whiteARookMoved = wARM;
+        blackHRookMoved = bHRM; blackARookMoved = bARM;
+    }
+    return count;
+}
+
+int perft_divide(char board[8][8], int depth, bool white_to_move)
+{
+    vector<Move> moves = generate_legal_moves(board, white_to_move);
+
+    int total = 0;
+
+    for(const auto &m : moves)
+    {
+        char temp_board[8][8];
+        for(int i = 0; i < 8; i++)
+            for(int j = 0; j < 8; j++)
+                temp_board[i][j] = board[i][j];
+
+        Move prev_lastmove = lastmove;
+        bool wKM = whiteKingMoved, bKM = blackKingMoved;
+        bool wHRM = whiteHRookMoved, wARM = whiteARookMoved;
+        bool bHRM = blackHRookMoved, bARM = blackARookMoved;
+
+        lastmove = m;
+        update_castling_flags(m.from, m.to, m.piece);
+        move_piece(temp_board, m.from, m.to, 'q');
+
+        int nodes;
+        if(depth == 1)
+            nodes = 1;
+        else
+            nodes = perft(temp_board, depth - 1, !white_to_move);
+
+        total += nodes;
+
+        cout << char('a' + m.from.col)
+             << 8 - m.from.row
+             << char('a' + m.to.col)
+             << 8 - m.to.row
+             << " : "
+             << nodes
+             << '\n';
+
+        lastmove = prev_lastmove;
+        whiteKingMoved = wKM;
+        blackKingMoved = bKM;
+        whiteHRookMoved = wHRM;
+        whiteARookMoved = wARM;
+        blackHRookMoved = bHRM;
+        blackARookMoved = bARM;
+    }
+
+    cout << "Total = " << total << '\n';
+    return total;
+}
 
 int main()
 {
     char board[8][8] =
     {
-        {'r','n','b','q','k','b','n','r'},
-        {'p','p','p','p','p','p','p','p'},
-        {'.','.','.','.','.','.','.','.'},
-        {'.','.','.','.','.','.','.','.'},
-        {'.','.','.','.','.','.','.','.'},
-        {'.','.','.','.','.','.','.','.'},
-        {'P','P','P','P','P','P','P','P'},
-        {'R','N','B','Q','K','B','N','R'}};
+        {'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'},
+        {'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'},
+        {'.', '.', '.', '.', '.', '.', '.', '.'},
+        {'.', '.', '.', '.', '.', '.', '.', '.'},
+        {'.', '.', '.', '.', '.', '.', '.', '.'},
+        {'.', '.', '.', '.', '.', '.', '.', '.'},
+        {'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'},
+        {'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'}
+    };
     print_board(board);
 
     bool is_white_turn = true;
-    while(1)
+    /* while(1)
     {
         pair<string, string> move =  take_input();
         Position from = string_to_index(move.first);
@@ -531,6 +653,11 @@ int main()
         {
             cout<<"CHECK"<<"\n";
         }
-    }
+    }*/
+
+    int count = perft_divide(board, 5, true);
+    cout<<count;
+
+    return 0;
 
 }
