@@ -2,7 +2,7 @@
 #include "types.h"
 using namespace std;
 
-void move_piece(char board[8][8], Position from, Position to, char promotion_piece = '\0')
+void move_piece(char board[8][8], Position from, Position to, char promotion_piece)
 {
     char piece = board[from.row][from.col];
     if ((piece == 'K' || piece == 'k') && abs(to.col - from.col) == 2)

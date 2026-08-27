@@ -6,7 +6,7 @@ using namespace std;
 
 GameState check_game_state(char board[8][8], bool white_to_move)
 {
-    bool has_legal_move = false;
+    bool has_legal_move = true;
     for(int i = 0; i < 8 && !has_legal_move; i++)
     {
         for(int j = 0; j < 8 && !has_legal_move; j++)

@@ -302,7 +302,24 @@ vector<Move> generate_legal_moves(char board[8][8], bool white_to_move)
                     {
                         if(is_legal_move(board, {i, j}, {k, l}, white_to_move))
                         {
-                            result.push_back({{i, j}, {k, l}, piece});
+                            if (piece == 'P' && k == 0)
+                            {
+                                result.push_back({{i,j},{k,l},piece,'Q'});
+                                result.push_back({{i,j},{k,l},piece,'R'});
+                                result.push_back({{i,j},{k,l},piece,'B'});
+                                result.push_back({{i,j},{k,l},piece,'N'});
+                            }
+                            else if (piece == 'p' && k == 7)
+                            {
+                                result.push_back({{i,j},{k,l},piece,'q'});
+                                result.push_back({{i,j},{k,l},piece,'r'});
+                                result.push_back({{i,j},{k,l},piece,'b'});
+                                result.push_back({{i,j},{k,l},piece,'n'});
+                            }
+                            else
+                            {
+                                result.push_back({{i,j},{k,l},piece,'\0'});
+                            }
                         }
                     }
                 }

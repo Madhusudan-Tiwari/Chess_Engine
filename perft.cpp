@@ -63,7 +63,7 @@ int perft_divide(char board[8][8], int depth, bool white_to_move)
 
         lastmove = m;
         update_castling_flags(m.from, m.to, m.piece);
-        move_piece(temp_board, m.from, m.to, 'q');
+        move_piece(temp_board, m.from, m.to, m.promotion);
 
         int nodes;
         if(depth == 1)
@@ -92,4 +92,13 @@ int perft_divide(char board[8][8], int depth, bool white_to_move)
 
     cout << "Total = " << total << '\n';
     return total;
+}
+
+void run_perft(char board[8][8],int depth)
+{
+    cout << "Perft Depth "
+         << depth
+         << " = "
+         << perft_divide(board,depth,true)
+         << '\n';
 }

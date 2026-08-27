@@ -16,7 +16,8 @@ struct Position
 
 struct Move
 {
-    Position from = {-1, -1};
-    Position to = {-1, -1};
+    Position from = {};
+    Position to = {};
     char piece = ' ';
+    char promotion = '\0';
 };
