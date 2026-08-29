@@ -4,65 +4,51 @@
 #include "move_generation.h"
 #include "evaluation.h"
 #include "board.h"
+#include "game_state.h"
 using namespace std;
 
-int minimax(char board[8][8], bool white_to_move, int depth)
+int minimax(BoardState board, int depth)
 {
-    if(depth == 0) return evaluate_position(board);
+    if(depth == 0) return evaluate_position(board.board);
 
-    vector<Move> legal_moves = generate_legal_moves(board, white_to_move);
-    if(legal_moves.empty()) return evaluate_position(board);
+    vector<Move> legal_moves = generate_legal_moves(board);
+    if(legal_moves.empty()) return evaluate_position(board.board);
 
-    char temp_board[8][8];
-    int best_score = white_to_move ? -1e9 : 1e9;
+    int best_score = board.whiteToMove ? -1e9 : 1e9;
     
 
     for(Move move : legal_moves)
-    {
-        for(int row = 0; row < 8; row++)
-        {
-            for(int col = 0; col < 8; col++)
-            {
-                temp_board[row][col] = board[row][col];
+    {        
+        BoardState temp_board = board;
+        make_move(temp_board, move);  
+        int score = minimax(temp_board, depth - 1);
 
-            }
-        }
-        
-        move_piece(temp_board, move.from, move.to, move.promotion);
-        int score = minimax(temp_board, !white_to_move, depth - 1);
-
-        if(white_to_move) best_score = max(score, best_score);
+        if(board.whiteToMove) best_score = max(score, best_score);
         else best_score = min(score, best_score);
     }
 
     return best_score;
 }
 
-Move find_best_move(char board[8][8], bool white_to_move, int depth)
+Move find_best_move(BoardState board, int depth)
 {
-    vector<Move> legal_moves = generate_legal_moves(board, white_to_move);
+    vector<Move> legal_moves = generate_legal_moves(board);
 
     Move best_move = legal_moves[0];
-    int best_score = white_to_move? -1e9: 1e9;
+    int best_score = board.whiteToMove? -1e9: 1e9;
 
     for(Move move: legal_moves)
     {
-        char temp_board[8][8];
-        for(int i = 0; i < 8; i++)
-        {
-            for(int j = 0; j < 8; j++)
-            {
-                temp_board[i][j] = board[i][j];
-            }
-        }
-        move_piece(temp_board, move.from, move.to, move.promotion);
-        int score = minimax(temp_board, !white_to_move, depth - 1);
-        if(white_to_move && score > best_score)
+        BoardState temp_board = board;
+
+        make_move(temp_board, move);
+        int score = minimax(temp_board, depth - 1);
+        if(board.whiteToMove && score > best_score)
         {
             best_move = move;
             best_score = score;
         }
-        else if(!white_to_move && score < best_score)
+        else if(!board.whiteToMove && score < best_score)
         {
             best_move = move;
             best_score = score;

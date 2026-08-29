@@ -1,6 +1,5 @@
 #include<iostream>
 #include "utils.h"
-#include "globals.h"
 #include "types.h"
 #include "board.h"
 #include<vector>
@@ -144,17 +143,17 @@ Position find_king(char board[8][8], bool is_white)
     return {-1,-1};
 }
 
-bool is_legal_move(char board[8][8], Position from, Position to, bool is_white_turn)
+bool is_legal_move(BoardState& board, Position from, Position to)
 {
     if(from.row == to.row && from.col == to.col) return false;
-    char piece = board[from.row][from.col];
+    char piece = board.board[from.row][from.col];
     if(piece == '.')return false;
 
     int row_diff = abs(to.row - from.row);
     int col_diff = abs(to.col-from.col);
-    char target = board[to.row][to.col];
+    char target = board.board[to.row][to.col];
 
-    if (is_white_turn)
+    if (board.whiteToMove)
     {
         if (!isupper(piece)) return false;
         if (isupper(target)) return false;
@@ -175,7 +174,7 @@ bool is_legal_move(char board[8][8], Position from, Position to, bool is_white_t
                 if(from.row == 6)
                 {
                     if(to.row != 4 && to.row != 5) return false;
-                    if(to.row == 4 && board[5][to.col] != '.')return false;
+                    if(to.row == 4 && board.board[5][to.col] != '.')return false;
                 }
                 else 
                 {
@@ -184,7 +183,7 @@ bool is_legal_move(char board[8][8], Position from, Position to, bool is_white_t
             }
             else if(col_diff == 1)
             {
-                if(target == '.') if(lastmove.from.row != 1 || lastmove.to.row != 3 || lastmove.to.col != to.col || from.row != 3 || lastmove.piece != 'p') return false;
+                if(target == '.') if(board.lastmove.from.row != 1 || board.lastmove.to.row != 3 || board.lastmove.to.col != to.col || from.row != 3 || board.lastmove.piece != 'p') return false;
                 if(to.row - from.row != -1)return false;
             }
             else return false;
@@ -197,7 +196,7 @@ bool is_legal_move(char board[8][8], Position from, Position to, bool is_white_t
                 if(from.row == 1)
                 {
                     if(to.row != 2 && to.row != 3) return false;
-                    if(to.row == 3 && board[2][to.col] != '.')return false;
+                    if(to.row == 3 && board.board[2][to.col] != '.')return false;
                 }
                 else 
                 {
@@ -206,7 +205,7 @@ bool is_legal_move(char board[8][8], Position from, Position to, bool is_white_t
             }
             else if(col_diff == 1)
             {
-                if(target == '.') if(lastmove.from.row != 6 || lastmove.to.row != 4 || lastmove.to.col != to.col || from.row != 4 || lastmove.piece != 'P') return false;
+                if(target == '.') if(board.lastmove.from.row != 6 || board.lastmove.to.row != 4 || board.lastmove.to.col != to.col || from.row != 4 || board.lastmove.piece != 'P') return false;
                 if(to.row - from.row != 1)return false;
             }
             else return false;
@@ -223,26 +222,26 @@ bool is_legal_move(char board[8][8], Position from, Position to, bool is_white_t
             if(col_diff == 2)
             {
                 if(row_diff != 0) return false;
-                if(is_white_turn && whiteKingMoved || !is_white_turn && blackKingMoved)return false;
+                if(board.whiteToMove && board.whiteKingMoved || !board.whiteToMove && board.blackKingMoved)return false;
                 if(to.col > from.col)
                 {
-                    if (is_white_turn && whiteHRookMoved || !is_white_turn && blackHRookMoved) return false;
-                    if (board[from.row][5] != '.' || board[from.row][6] != '.') return false;
+                    if (board.whiteToMove && board.whiteHRookMoved || !board.whiteToMove && board.blackHRookMoved) return false;
+                    if (board.board[from.row][5] != '.' || board.board[from.row][6] != '.') return false;
 
-                    if (is_square_attacked(board, {from.row, 4}, is_white_turn) ||
-                        is_square_attacked(board, {from.row, 5}, is_white_turn) ||
-                        is_square_attacked(board, {from.row, 6}, is_white_turn))
+                    if (is_square_attacked(board.board, {from.row, 4}, board.whiteToMove) ||
+                        is_square_attacked(board.board, {from.row, 5}, board.whiteToMove) ||
+                        is_square_attacked(board.board, {from.row, 6}, board.whiteToMove))
                         return false;
                 }
                 else
                 {
                     
-                    if (is_white_turn && whiteARookMoved || !is_white_turn && blackARookMoved) return false;
-                    if (board[from.row][1] != '.' || board[from.row][2] != '.' || board[from.row][3] != '.') return false;
+                    if (board.whiteToMove && board.whiteARookMoved || !board.whiteToMove && board.blackARookMoved) return false;
+                    if (board.board[from.row][1] != '.' || board.board[from.row][2] != '.' || board.board[from.row][3] != '.') return false;
 
-                    if (is_square_attacked(board, {from.row, 4}, is_white_turn) ||
-                        is_square_attacked(board, {from.row, 3}, is_white_turn) ||
-                        is_square_attacked(board, {from.row, 2}, is_white_turn))
+                    if (is_square_attacked(board.board, {from.row, 4}, board.whiteToMove) ||
+                        is_square_attacked(board.board, {from.row, 3}, board.whiteToMove) ||
+                        is_square_attacked(board.board, {from.row, 2}, board.whiteToMove))
                         return false;
                 }
             }
@@ -251,56 +250,52 @@ bool is_legal_move(char board[8][8], Position from, Position to, bool is_white_t
         case 'r':
         case 'R':
             if(row_diff != 0 && col_diff != 0) return false;
-            if(!is_path_clear(board, from, to)) return false;
+            if(!is_path_clear(board.board, from, to)) return false;
             break;
 
         case 'b':
         case 'B':
             if(row_diff != col_diff) return false;
-            if(!is_path_clear(board, from, to)) return false;
+            if(!is_path_clear(board.board, from, to)) return false;
             break;
 
         case 'q':
         case 'Q':
             if(row_diff != col_diff && row_diff != 0 && col_diff != 0) return false;
-            if(!is_path_clear(board, from, to)) return false;
+            if(!is_path_clear(board.board, from, to)) return false;
             break;
 
         default:
             return false;
     }
 
-    char temp_board[8][8];
-    for(int i = 0; i < 8; i++)
-    {
-        for(int j = 0; j < 8; j++)
-        {
-            temp_board[i][j] = board[i][j];
-        }
-    }
+    BoardState temp_board = board;
 
-    move_piece(temp_board, from, to, 'q');
-    if(is_square_attacked(temp_board, find_king(temp_board, is_white_turn), is_white_turn)) return false;
+    make_move(temp_board, {from, to, piece, 'q'});
+
+    Position king = find_king(temp_board.board, board.whiteToMove);
+        
+    if(is_square_attacked(temp_board.board, find_king(temp_board.board, board.whiteToMove), board.whiteToMove)) return false;
 
     return true;
 }
 
 
-vector<Move> generate_legal_moves(char board[8][8], bool white_to_move)
+vector<Move> generate_legal_moves(BoardState board)
 {
     vector<Move> result;
     for(int i = 0; i < 8; i++)
     {
         for(int j = 0; j < 8; j++)
         {
-            char piece = board[i][j];
-            if(white_to_move && isupper(piece) || !white_to_move && islower(piece))
+            char piece = board.board[i][j];
+            if(board.whiteToMove && isupper(piece) || !board.whiteToMove && islower(piece))
             {
                 for(int k = 0; k < 8; k++)
                 {
                     for(int l = 0; l < 8; l++)
                     {
-                        if(is_legal_move(board, {i, j}, {k, l}, white_to_move))
+                        if(is_legal_move(board, {i, j}, {k, l}))
                         {
                             if (piece == 'P' && k == 0)
                             {

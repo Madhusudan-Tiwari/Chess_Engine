@@ -22,13 +22,9 @@ Position find_king(
 );
 
 bool is_legal_move(
-    char board[8][8],
+    BoardState& board,
     Position from,
-    Position to,
-    bool is_white_turn
+    Position to
 );
 
-std::vector<Move> generate_legal_moves(
-    char board[8][8],
-    bool white_to_move
-);
+std::vector<Move> generate_legal_moves(BoardState board);

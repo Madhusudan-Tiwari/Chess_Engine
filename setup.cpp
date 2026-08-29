@@ -1,6 +1,6 @@
-#include "globals.h"
+#include "types.h"
 
-void init_default_board(char board[8][8])
+void init_default_board(BoardState &state)
 {
     char starting_board[8][8] =
     {
@@ -18,21 +18,20 @@ void init_default_board(char board[8][8])
     {
         for(int j=0;j<8;j++)
         {
-            board[i][j]=starting_board[i][j];
+            state.board[i][j]=starting_board[i][j];
         }
     }
-}
 
-void reset_game_state()
-{
-    lastmove = {};
+    state.lastmove = {};
 
-    whiteKingMoved = false;
-    blackKingMoved = false;
+    state.whiteToMove = true;
+    
+    state.whiteKingMoved = false;
+    state.blackKingMoved = false;
 
-    whiteARookMoved = false;
-    whiteHRookMoved = false;
+    state.whiteARookMoved = false;
+    state.whiteHRookMoved = false;
 
-    blackARookMoved = false;
-    blackHRookMoved = false;
+    state.blackARookMoved = false;
+    state.blackHRookMoved = false;
 }

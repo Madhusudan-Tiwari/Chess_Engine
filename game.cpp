@@ -4,19 +4,16 @@
 #include "game_state.h"
 #include "move_generation.h"
 #include "utils.h"
-#include "globals.h"
 #include "search.h"
 using namespace std;
 
-void play_game(char board[8][8])
+void play_game(BoardState& board)
 {
-    bool is_white_turn = true;
-
-    print_board(board);
+    print_board(board.board);
     
     while(true)
     {
-        cout << (is_white_turn ? "White" : "Black")
+        cout << (board.whiteToMove ? "White" : "Black")
              << " to move\n";
 
         pair<string,string> move = take_input();
@@ -24,19 +21,11 @@ void play_game(char board[8][8])
         Position from = string_to_index(move.first);
         Position to = string_to_index(move.second);
 
-        if(is_legal_move(board,from,to,is_white_turn))
+        if(is_legal_move(board, from, to))
         {
-            char piece = board[from.row][from.col];
+            char piece = board.board[from.row][from.col];
 
-            update_castling_flags(from,to,piece);
-
-            move_piece(board,from,to);
-
-            lastmove.from = from;
-            lastmove.to = to;
-            lastmove.piece = piece;
-
-            is_white_turn = !is_white_turn;
+            make_move(board, {from, to, piece});
         }
         else
         {
@@ -44,11 +33,11 @@ void play_game(char board[8][8])
             continue;
         }
 
-        print_board(board);
+        print_board(board.board);
 
-        Move best_move = find_best_move(board, is_white_turn, 1);
+        Move best_move = find_best_move(board, 1);
         cout<< best_move.from.row<< best_move.from.col<< " "<< best_move.to.row<< best_move.to.col;
-        GameState state = check_game_state(board, is_white_turn);
+        GameState state = check_game_state(board);
 
         switch(state)
         {

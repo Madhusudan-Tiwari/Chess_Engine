@@ -3,13 +3,12 @@ using namespace std;
 #include "setup.h"
 #include "game.h"
 #include "perft.h"
+#include "types.h"
 
 int main()
 {
-    char board[8][8];
-
+    BoardState board;
     init_default_board(board);
-    reset_game_state();
 
     play_game(board);
     // int a;
