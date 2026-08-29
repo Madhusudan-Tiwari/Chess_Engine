@@ -5,7 +5,7 @@
 #include "move_generation.h"
 #include "utils.h"
 #include "globals.h"
-#include "evaluation.h"
+#include "search.h"
 using namespace std;
 
 void play_game(char board[8][8])
@@ -46,7 +46,9 @@ void play_game(char board[8][8])
 
         print_board(board);
 
-        GameState state = check_game_state(board,is_white_turn);
+        Move best_move = find_best_move(board, is_white_turn, 1);
+        cout<< best_move.from.row<< best_move.from.col<< " "<< best_move.to.row<< best_move.to.col;
+        GameState state = check_game_state(board, is_white_turn);
 
         switch(state)
         {
