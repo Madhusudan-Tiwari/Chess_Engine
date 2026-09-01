@@ -13,19 +13,23 @@ void play_game(BoardState& board)
     
     while(true)
     {
-        cout << (board.whiteToMove ? "White" : "Black")
-             << " to move\n";
+        Move best_move;
+        if(board.whiteToMove) best_move = find_best_move(board, 5);
+        else best_move = find_best_move(board, 2);
 
-        pair<string,string> move = take_input();
+        cout << index_to_string(best_move.from)<< " "<< index_to_string(best_move.to)<< '\n';
+        Move move = best_move;
 
-        Position from = string_to_index(move.first);
-        Position to = string_to_index(move.second);
+        //pair<string,string> move = take_input();
 
-        if(is_legal_move(board, from, to))
+        //Position from = string_to_index(move.first);
+        //Position to = string_to_index(move.second);
+
+        if(is_legal_move(board, move.from, move.to))
         {
-            char piece = board.board[from.row][from.col];
+            char piece = board.board[move.from.row][move.from.col];
 
-            make_move(board, {from, to, piece});
+            make_move(board, {move.from, move.to, piece});
         }
         else
         {
@@ -35,8 +39,6 @@ void play_game(BoardState& board)
 
         print_board(board.board);
 
-        Move best_move = find_best_move(board, 1);
-        cout<< best_move.from.row<< best_move.from.col<< " "<< best_move.to.row<< best_move.to.col;
         GameState state = check_game_state(board);
 
         switch(state)

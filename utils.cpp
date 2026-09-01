@@ -26,6 +26,14 @@ Position string_to_index(string pos)
     return{row, col};
 }
 
+string index_to_string(Position pos)
+{
+    char file = 'a' + pos.col;
+    char rank = '8' - pos.row;
+
+    return string(1, file) + rank;
+}
+
 bool inside(int row, int col)
 {
     return row >= 0 && row < 8 &&
